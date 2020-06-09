@@ -3,3 +3,7 @@ exports.isUsername = username => {
     return isUsername.test(username);
 }
 
+exports.isPassword = password => {
+    const isPassword = /^.*(?=.{8,})(?=.*[a-zA-Z])(?=.*\d).*$/;
+    return isPassword.test(password);
+}
