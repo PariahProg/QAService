@@ -14,6 +14,8 @@ db.connect(err => {
     const authController = require('./controllers/authController');
     const resetController = require('./controllers/resetController');
     const verifyController = require('./controllers/verifyController');
+    const questionController = require('./controllers/questionController');
+    const answerController = require('./controllers/answerController');
 
     const authMiddleware = require('./middleware/auth');
     const verifyUserMiddleware = require('./middleware/verifyUser');
@@ -25,14 +27,28 @@ db.connect(err => {
     
     app.get('/sections', sectionController.getSections); // Вывод всех категорий
     app.get('/confirm/:verifyToken', verifyController.verify); // Верификация аккаунта пользователя
+    app.get('/questions', questionController.getAllQuestions); // Вывод всех вопросов
+    app.get('/question/:id', questionController.getQuestion); // Отдельный вопрос на странице
+    app.get('/user/questions', authMiddleware, questionController.getQuestionsUser); // Вывод вопроса пользователя
+    app.get('/:id', questionController.getQuestionsBySectionOrSubsection); // Вывод вопросов категории или подкатегории
+    app.post('/ask', authMiddleware, verifyUserMiddleware, questionController.makeQuestion); // Задать вопрос
+    app.post('/question/:id/delete', authMiddleware, verifyUserMiddleware, questionController.deleteQuestion); // Удалить вопрос
+    app.get('/user/answers', authMiddleware, answerController.getAnswersUser); // Вывод ответов пользователя
     /*Это должно быть в самом низу гет запросов*/
+    app.get('/search', questionController.search); // Поиск
+
     
     app.post('/user/signUp', authController.signUp); // Регистрация
     app.post('/user/signIn', authController.signIn); // Авторизация
     app.post('/user/refresh-tokens', authController.refreshTokens); // рефреш токена
     app.post('/user/resetPassword', authMiddleware, verifyUserMiddleware, resetController.resetPassword); // Новый пароль
     app.post('/user/resetEmail', authMiddleware, verifyUserMiddleware, resetController.resetEmail); // Новый мейл
-    app.post('/logout', authMiddleware, authController.logout); 
+    app.post('/logout', authMiddleware, authController.logout);
+    app.post('/answer', authMiddleware, verifyUserMiddleware, answerController.makeAnswer); // Ответить на вопрос
+    app.post('/answer/:id/delete', authMiddleware, verifyUserMiddleware, answerController.deleteAnswer); // Удалить ответ
+    app.post('/setLikeAnswer/:id', authMiddleware, verifyUserMiddleware, answerController.setLikeAnswer); // лайк Ответу
+    app.post('/setDislikeAnswer/:id', authMiddleware, verifyUserMiddleware, answerController.setDislikeAnswer); // дизлайк Ответу
+    
 
     app.listen(port, () => console.log(`Server has been started on port ${port}!`)); 
 })
