@@ -1,0 +1,12 @@
+.layout {
+    min-height: 100vh;
+    width: 100%;
+    margin-top: 55px;
+    padding: 1%;
+    background-color: linear-gradient(30deg, #5c5c5c 0%, #ececec 100% );
+    display: table
+}
+
+.layout:only-child {
+    display: table-row;
+}
