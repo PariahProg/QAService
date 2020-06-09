@@ -4,9 +4,11 @@ const fs = require('fs');
 
 let urlQuestions = 'https://stackoverflow.com/questions';
 let urlCompanies = 'https://stackoverflow.com/jobs/companies';
+let urlUsers = 'https://stackoverflow.com/users'
 
 let dataQuestions = [];
 let dataCompanies = [];
+let dataUsers = [];
 
 let indexPage = 1;
 
@@ -68,6 +70,33 @@ function getCompanies(URL, indexPage) {
     })
 }
 
+function getUsers(URL, indexPage) {
+    needle.get(URL, (err, res) => {
+        if (err) throw err;
+        while (indexPage < 10) {
+            let $ = cheerio.load(res.body);
+    
+            $('.user-info').each((index, element) => {
+                const name = $(element).find('.user-details > a').text().replace(/\n/g, '').trim();
+                const location = $(element).find('.user-location').text().replace(/\n/g, '').replace(/s\s+/, '').trim();
+                const languages = $(element).find('.user-tags').text().replace(/\n/g, '').trim();
+                
+                dataUsers.push({
+                    name: name,
+                    location: location,
+                    languages: languages,
+                    page: indexPage
+                });
+            })
+
+            writeFileUsers(fs);
+            indexPage++;
+            URL = `https://stackoverflow.com/users?page=${indexPage}&tab=reputation&filter=week`;
+    
+            return getUsers(URL, indexPage);
+        }
+    })
+}
 
 function writeFileCompanies(fs) {
     return fs.appendFileSync('./data.json', JSON.stringify(dataCompanies, null, 4));
@@ -77,6 +106,10 @@ function writeFileQuestions(fs) {
     return fs.writeFileSync('./data.json', JSON.stringify(dataQuestions, null, 4));
 }
 
-getQuestions(urlQuestions, indexPage);
+function writeFileUsers(fs) {
+    return fs.appendFileSync('./data.json', JSON.stringify(dataUsers, null, 4));
+}
 
+getQuestions(urlQuestions, indexPage);
 getCompanies(urlCompanies, indexPage);
+getUsers(urlUsers, indexPage);
